@@ -93,4 +93,55 @@ library ValidationLibrary {
     function isValidPrice(uint256 price) internal pure returns (bool isValid) {
         return price > 0 && price <= 15_000_000; // Max £15M per player
     }
+    
+    /// @dev Validate squad composition (2 GK, 5 DEF, 5 MID, 3 FWD)
+    /// @param positionCounts Array of position counts [GK, DEF, MID, FWD]
+    /// @return isValid Whether the squad composition is valid
+    function isValidSquadComposition(uint256[4] memory positionCounts) internal pure returns (bool isValid) {
+        return positionCounts[0] == 2 && // 2 Goalkeepers
+               positionCounts[1] == 5 && // 5 Defenders
+               positionCounts[2] == 5 && // 5 Midfielders
+               positionCounts[3] == 3;   // 3 Forwards
+    }
+    
+    /// @dev Validate team budget
+    /// @param totalCost Total cost of the team
+    /// @return isValid Whether the budget is valid
+    function isValidBudget(uint256 totalCost) internal pure returns (bool isValid) {
+        return totalCost <= DataStructures.MAX_BUDGET;
+    }
+    
+    /// @dev Validate EPL team limits (max 3 players per team)
+    /// @param teamCounts Array of team counts for each EPL team
+    /// @return isValid Whether team limits are respected
+    function isValidTeamLimits(uint256[21] memory teamCounts) internal pure returns (bool isValid) {
+        for (uint256 i = 1; i <= DataStructures.TOTAL_EPL_TEAMS; i++) {
+            if (teamCounts[i] > DataStructures.MAX_PLAYERS_PER_TEAM) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /// @dev Validate starting lineup indices
+    /// @param startingLineup Array of starting lineup indices
+    /// @return isValid Whether all indices are valid (< 15)
+    function isValidStartingLineup(uint256[11] memory startingLineup) internal pure returns (bool isValid) {
+        for (uint256 i = 0; i < 11; i++) {
+            if (startingLineup[i] >= DataStructures.SQUAD_SIZE) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /// @dev Validate captain and vice-captain indices
+    /// @param captainIndex Captain index in starting lineup
+    /// @param viceCaptainIndex Vice-captain index in starting lineup
+    /// @return isValid Whether captain indices are valid
+    function isValidCaptainSelection(uint256 captainIndex, uint256 viceCaptainIndex) internal pure returns (bool isValid) {
+        return captainIndex < DataStructures.STARTING_XI && 
+               viceCaptainIndex < DataStructures.STARTING_XI && 
+               captainIndex != viceCaptainIndex;
+    }
 }
