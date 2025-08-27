@@ -73,6 +73,14 @@ library DataStructures {
         uint256 calculationTime; // When score was calculated
     }
     
+    /// @dev Oracle match data structure
+    struct MatchData {
+        uint256 matchweek;      // Matchweek number
+        uint256 timestamp;      // Data timestamp
+        bool isValidated;       // Whether data has been validated
+        uint256 performanceCount; // Number of performances
+    }
+    
     /// @dev Formation validation structure
     struct FormationCount {
         uint256 goalkeepers;    // Number of goalkeepers
@@ -100,4 +108,9 @@ library DataStructures {
     uint256 constant MINUTES_PLAYED_PARTIAL = 1; // <60 minutes
     uint256 constant SAVES_PER_POINT = 3;      // Every 3 saves = 1 point
     uint256 constant PENALTY_SAVE_POINTS = 5;  // Penalty save
+    
+    /// @dev Oracle constants
+    uint256 constant ORACLE_TIMEOUT = 3600;    // 1 hour timeout for oracle data
+    uint256 constant MIN_CONFIRMATIONS = 3;     // Minimum oracle confirmations
+    uint256 constant MAX_DATA_AGE = 7200;       // Maximum age of oracle data (2 hours)
 }

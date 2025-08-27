@@ -15,6 +15,7 @@ contract ScoringEngine is Ownable, ReentrancyGuard {
     using ValidationLibrary for *;
     
     TeamManager public teamManager;
+    address public oracleConsumer;
     
     // Matchweek scores: matchweek => owner => TeamScore
     mapping(uint256 => mapping(address => DataStructures.TeamScore)) public teamScores;
@@ -29,9 +30,20 @@ contract ScoringEngine is Ownable, ReentrancyGuard {
     event PlayerPerformanceUpdated(uint256 indexed matchweek, uint256 indexed playerId, uint256 points);
     event TeamScoreCalculated(uint256 indexed matchweek, address indexed owner, uint256 totalPoints);
     event AutoSubstitutionMade(uint256 indexed matchweek, address indexed owner, uint256 benchIndex, uint256 startingIndex);
+    event OracleConsumerUpdated(address indexed newOracleConsumer);
     
     constructor(address _teamManager) {
         teamManager = TeamManager(_teamManager);
+    }
+    
+    /**
+     * @notice Set oracle consumer address (Owner only)
+     * @param _oracleConsumer The oracle consumer contract address
+     */
+    function setOracleConsumer(address _oracleConsumer) external onlyOwner {
+        require(_oracleConsumer != address(0), "Invalid oracle consumer");
+        oracleConsumer = _oracleConsumer;
+        emit OracleConsumerUpdated(_oracleConsumer);
     }
 
     /**
@@ -44,7 +56,8 @@ contract ScoringEngine is Ownable, ReentrancyGuard {
         uint256 matchweek,
         uint256 playerId,
         DataStructures.PlayerPerformance memory performance
-    ) external onlyOwner {
+    ) external {
+        require(msg.sender == owner() || msg.sender == oracleConsumer, "Not authorized");
         require(ValidationLibrary.isValidMatchweek(matchweek), "Invalid matchweek");
         require(playerId > 0, "Invalid player ID");
         require(performance.playerId == playerId, "Player ID mismatch");
@@ -310,7 +323,7 @@ contract ScoringEngine is Ownable, ReentrancyGuard {
      * @param team The team data
      * @param currentLineup Current starting lineup
      * @param outIndex Index of player going out
-     * @param inIndex Index of player coming in
+
      * @param outPosition Position of player going out
      * @param inPosition Position of player coming in
      * @return canSubstitute Whether substitution maintains formation
@@ -319,7 +332,7 @@ contract ScoringEngine is Ownable, ReentrancyGuard {
         DataStructures.Team memory team,
         uint256[11] memory currentLineup,
         uint256 outIndex,
-        uint256 inIndex,
+        uint256 /* inIndex */,
         Position outPosition,
         Position inPosition
     ) internal view returns (bool canSubstitute) {
