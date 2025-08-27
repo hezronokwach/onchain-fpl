@@ -360,7 +360,7 @@ contract ScoringEngineTest is Test {
         );
         
         vm.prank(user1);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("Not authorized");
         scoringEngine.updatePlayerPerformance(1, 1, performance);
     }
     
