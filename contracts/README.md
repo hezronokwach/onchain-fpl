@@ -1,66 +1,103 @@
-## Foundry
+# OnChain FPL Smart Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
 
-Foundry consists of:
+This directory contains the smart contracts for the OnChain Fantasy Premier League (FPL) system built on Base network.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Contracts
 
-## Documentation
+- **TeamManager**: Manages player data and team validation
+- **PoolManager**: Handles pool creation and entry management
+- **ScoringEngine**: Implements FPL scoring system with auto-substitution
+- **OracleConsumer**: Integrates with Chainlink oracles for EPL data
+- **PayoutDistributor**: Automated prize distribution with tie-breaking
 
-https://book.getfoundry.sh/
+## Deployed Contracts (Base Sepolia)
 
-## Usage
+```
+TeamManager:      0x2FE4D90a1C855299D91d52D8304D7459365e5937
+PoolManager:      0x6b6461308df2d2B5D53448Ba641d171ccEf4a6f8
+ScoringEngine:    0x766A085a8DC91D7b4A1502235852e1E32ea90B7c
+OracleConsumer:   0x0bf9F843DF94D7C0c21674C236C82515367Fb969
+PayoutDistributor: 0xb8542407f75543aE1d77b5De32Dd0A91B1826734
+```
+
+## Quick Start
 
 ### Build
-
 ```shell
-$ forge build
+forge build
 ```
 
 ### Test
-
 ```shell
-$ forge test
+forge test
 ```
 
-### Format
-
+### Deploy All Contracts
 ```shell
-$ forge fmt
+./script/deploy-all.sh
 ```
 
-### Gas Snapshots
-
+### Interact with Contracts
 ```shell
-$ forge snapshot
+# Show contract addresses
+./script/interact.sh contract-info
+
+# Create a pool
+./script/interact.sh create-pool 1
+
+# Join a pool
+./script/interact.sh join-pool 1
 ```
 
-### Anvil
+## Development
 
+### Environment Setup
+1. Copy `.env.example` to `.env`
+2. Add your `PRIVATE_KEY` and `BASESCAN_API_KEY`
+3. Ensure you have test ETH from Base Sepolia faucet
+
+### Testing
 ```shell
-$ anvil
+# Run all tests
+forge test
+
+# Run specific test file
+forge test --match-path test/PoolManager.t.sol
+
+# Run with gas report
+forge test --gas-report
 ```
 
-### Deploy
-
+### Deployment
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+# Deploy to Base Sepolia
+./script/deploy-all.sh
+
+# Deploy individual contract
+forge script script/DeployPoolManager.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast
 ```
 
-### Cast
+## Architecture
 
-```shell
-$ cast <subcommand>
+The contracts work together as a complete FPL system:
+
+```
+Users → PoolManager (join pools) → TeamManager (submit teams) → ScoringEngine (calculate points) → PayoutDistributor (pay winners)
+                                                                        ↑
+                                                                OracleConsumer (EPL data)
 ```
 
-### Help
+## Documentation
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- [Foundry Book](https://book.getfoundry.sh/)
+- [Base Documentation](https://docs.base.org/)
+- [Project Documentation](../docs/)
+
+## Security
+
+- All contracts use OpenZeppelin security patterns
+- Comprehensive test coverage (83 tests)
+- Owner-only administrative functions
+- Reentrancy protection on critical functions
